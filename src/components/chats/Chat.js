@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import "./chat.css";
 import sound from '../../assets/beyond-doubt.mp3'
 import config from '../chats/chatConfig'
+import Logo from '../../assets/tool.png'
 
 import 'firebase/firestore';
 
@@ -13,16 +14,6 @@ var db = firebase.firestore()
 
 
 let ping = new Audio(sound)
-/* let message = [
-    {
-        author: 1,
-        text: 'Hi!'
-    },
-    {
-        author: 2,
-        text: 'Why are you disturbing me?'
-    }
-] */
 let message = []
 let chatID = ''
 
@@ -30,11 +21,6 @@ let chatID = ''
 
 
 export class Chat extends Component {
-
-
-
-
-
     state = {
         showChat: 'false',
         height: 45,
@@ -55,47 +41,37 @@ export class Chat extends Component {
     }
 
 
-    componentDidMount() {
-            firebase.initializeApp(config);
-    }
-
     playSound = () => {
         ping.play()
     }
 
 
     sendChatData = async (msg) => {
-        console.log('the message in sendData is...', msg)
-        console.log('chatID in state is...', this.state.chatID)
         document.getElementById('container').scrollTop = 9999999;
         try {
             if (!chatID) {
                 this.setState({ processing: true })
             }
 
-            const r = await fetch("https://us-central1-af-shop.cloudfunctions.net/newChat", {
+            const r = await fetch("https://us-central1-afdoctordial.cloudfunctions.net/newChat", {
                 method: "POST",
                 //mode: "no-cors",
                 headers: {
                     'Content-Type': 'application/json',
-
                 },
                 body: JSON.stringify({
-                    shopName: `${this.props.shopNamefromURL}`,
+                    //shopName: `${this.props.shopNamefromURL}`,
                     message: msg,
-                    chatID: chatID ? chatID : null
+                    chatID: 'ffff888877776666ssssK4cQgg9wCDM0EmmSdziq'
                 })
-            });
-            const r2 = await r.json();
+            })
+            const r2 = await r.json()
+            console.log('R2 found is ', r2)
             if (r2.msg === 'SUCCESS') {
-
-
                 console.log('response from chat server is:', r2.data, 'total response is... ', r2)
-                if (!chatID) {
+               
                     chatID = r2.data
                     this.setState({ chatID: r2.data, processing: false })
-
-                }
 
                 this.retrieveChat()
 
@@ -103,8 +79,6 @@ export class Chat extends Component {
                 console.log(r2.error)
                 this.setState({ processing: false })
             }
-
-
 
         } catch (err) {
             console.log("Error from firebase is: ", err);
@@ -117,14 +91,12 @@ export class Chat extends Component {
 
 
     retrieveChat = async () => {
-
-        db.collection("Chats").doc(chatID)
-            .onSnapshot(doc => {
-                console.log("Current chat data retrieved is: ", doc.data().chatMessages);
-
-                if (doc.data().chatMessages[doc.data().chatMessages.length - 1].author == 2) {
-                    this.playSound()
-                }
+        db.collection("Chats").doc('ffff888877776666ssssK4cQgg9wCDM0EmmSdziq')
+            .get().then(doc => {
+                console.log("Current chat data retrieved is: ", doc.data());
+                // if (doc.data().chatMessages[doc.data().chatMessages.length - 1].author == 2) {
+                //     this.playSound()
+                // }
                 message = doc.data().chatMessages
                 this.setState({ chatMessages: doc.data().chatMessages })
                 document.getElementById('container').scrollTop = 9999999;
@@ -181,9 +153,6 @@ export class Chat extends Component {
                     chatMessages: message
                 })
                 this.sendChatData(this.state.inputChat)
-
-
-
                 this.setState({
                     inputChat: ''
                 })
@@ -244,8 +213,6 @@ export class Chat extends Component {
                                                 </div>
                                             </div>
                                         </div>
-
-
                                     </div>
 
                                 }
@@ -255,17 +222,25 @@ export class Chat extends Component {
                         )
 
                     })}
-                    <div style={{ height: 30 }}></div>
+                    <div style={{ height: 30 }}> </div>
 
                 </div>
-                <div className=" px-1 pt-2 pb-4" style={{ height: '65px', backgroundColor: '#f4f5f7' }}>
+                <div className=" px-1 pt-2" style={{ height: '55px', backgroundColor: '#f4f5f7', display: 'flex' }}>
+
                     <label for="inputText" class="sr-only">Type your message and press Enter to send</label>
-                    <input type="text" name="inputChat" value={this.state.inputChat}
+
+                    <div style={{ flex: '90%' }}> <input type="text" name="inputChat" value={this.state.inputChat}
                         onChange={this.handleChange}
                         onKeyDown={keyPress} id="inputText" class="form-control" placeholder="Type your message and press Enter to send" required autofocus
                         disabled={this.state.processing}
+
                     />
+                    </div>
+                    <div style={{ flex: '10%', padding: 5 }}>
+                        <img src={Logo} width='15' />
+                    </div>
                 </div>
+
             </div >
 
         )
