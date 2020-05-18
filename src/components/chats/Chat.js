@@ -168,7 +168,7 @@ export class Chat extends Component {
             }}>
                 <div
                     onClick={this.openChat}
-                    style={{ borderRadius: '5px', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, height: '45px', backgroundColor: this.props.backgroundColor || '#cd0000' }}>
+                    style={{ borderRadius: '5px', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, height: '45px', backgroundColor: this.props.backgroundColor || 'blue' }}>
                     <p className="pl-3" style={{ lineHeight: '45px', color: 'white' }}>Live Chat <span className="float-right mr-3"><a onClick={this.openChat} href="#" className="text-white"><i className={this.state.iconClass}></i></a></span></p>
                 </div>
                 <div className="bg-white p-3" style={{ height: '330px', overflow: 'scroll' }} id="container">
