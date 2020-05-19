@@ -31,7 +31,6 @@ export class Chat extends Component {
         processing: false,
         chatMessages: [],
         unread:'',
-        open:'',
         sending: false
     }
 
@@ -40,16 +39,6 @@ export class Chat extends Component {
         if (!firebase.apps.length) {
             firebase.initializeApp(config);
         }
-    }
-
-    openChat = () => {
-        if (this.state.height == 45) {
-            this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener', open: true })
-        }
-        else {
-            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '', open:false })
-        }
-
     }
 
 
@@ -125,7 +114,22 @@ export class Chat extends Component {
             );
     }
 
-   
+    componentDidMount() {
+
+        //this.playSound()
+
+    }
+
+
+    openChat = () => {
+        if (this.state.height == 45) {
+            this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener' })
+        }
+        else {
+            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '' })
+        }
+
+    }
 
     handleChange = (e) => {
 
