@@ -20,6 +20,7 @@ function App() {
   const [tt, setTT] = useState("")
   const [tr, setTR] = useState("")
   const [wc, setWC] = useState("")
+  const [viewMod, setViewMod] = useState("")
   const [videoURL, setVIDEOURL] = useState("")
 
 
@@ -37,6 +38,7 @@ function App() {
       setTT(fullURLsubStrings[3])
       setTR(fullURLsubStrings[4])
       setWC(fullURLsubStrings[5])
+      setViewMod(fullURLsubStrings[6])
       // return fullURLsubStrings[2]; 
     
   }
@@ -55,12 +57,12 @@ function App() {
 
   return (
     <div className="App">
-      <nav class="navbar nav shadow-sm">
+      {viewMod == 2 && <nav class="navbar nav shadow-sm">
         <span class="navbar-brand mb-0 h1">Tele-Video</span>
-      </nav>
+      </nav>}
 
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 20 }}>
-        <div style={{ display: "flex", justifyContent: "center", height: "90vh", width: "90%" }}>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: viewMod == 2?20:0 }}>
+        <div style={{ display: "flex", justifyContent: "center", height: viewMod == 2? "90vh":"100vh", width: viewMod == 2?"90%":"100%" }}>
           <Iframe 
             url={videoURL}
             position="relative"
@@ -72,7 +74,7 @@ function App() {
             allow="camera"
           />
         </div>
-        <Chat />
+        {viewMod == 2 && <Chat wcChat={wc}/>}
       </div>
 
     </div>

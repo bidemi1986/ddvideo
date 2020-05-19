@@ -39,6 +39,7 @@ export class Chat extends Component {
         if (!firebase.apps.length) {
             firebase.initializeApp(config);
         }
+        console.log("chatID recieved is: ",this.props.wcChat)
     }
 
 
@@ -62,7 +63,7 @@ export class Chat extends Component {
                 body: JSON.stringify({
                     //shopName: `${this.props.shopNamefromURL}`,
                     message: msg,
-                    chatID: '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p'
+                    chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p'
                 })
             })
             const r2 = await r.json()
@@ -91,7 +92,7 @@ export class Chat extends Component {
 
 
     retrieveChat = async () => {
-        db.collection("Chats").doc('3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p')
+        db.collection("Chats").doc(this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p')
             .get().then(doc => {
                 console.log("Current chat data retrieved is: ", doc.data());
                 // if (doc.data().chatMessages[doc.data().chatMessages.length - 1].author == 2) {
