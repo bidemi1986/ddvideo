@@ -30,6 +30,8 @@ export class Chat extends Component {
         chatID: '',
         processing: false,
         chatMessages: [],
+        unread:'',
+        open:'',
         sending: false
     }
 
@@ -39,6 +41,16 @@ export class Chat extends Component {
             firebase.initializeApp(config);
         }
         console.log("chatID recieved is: ",this.props.wcChat)
+    }
+
+    openChat = () => {
+        if (this.state.height == 45) {
+            this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener', open: true })
+        }
+        else {
+            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '', open:false })
+        }
+
     }
 
 
@@ -53,7 +65,6 @@ export class Chat extends Component {
             if (!chatID) {
                 this.setState({ processing: true })
             }
-
             const r = await fetch("https://us-central1-afdoctordial.cloudfunctions.net/newChat", {
                 method: "POST",
                 //mode: "no-cors",
@@ -63,13 +74,13 @@ export class Chat extends Component {
                 body: JSON.stringify({
                     //shopName: `${this.props.shopNamefromURL}`,
                     message: msg,
-                    chatID: this.props.wcChat || 'ffff888877776666ssssK4cQgg9wCDM0EmmSdziq'
+                    chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p'
                 })
             })
             const r2 = await r.json()
             console.log('R2 found is ', r2)
             if (r2.msg === 'SUCCESS') {
-                console.log('response from chat server is:', r2.data, 'total response is... ', r2)
+                console.log('response from chat server is:', r2, 'total response is... ', r2)
                
                     chatID = r2.data
                     this.setState({ chatID: r2.data, processing: false })
@@ -92,19 +103,21 @@ export class Chat extends Component {
 
 
     retrieveChat = async () => {
-        db.collection("Chats").doc(this.props.wcChat || 'ffff888877776666ssssK4cQgg9wCDM0EmmSdziq')
+        db.collection("Chats").doc(this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p')
             .get().then(doc => {
                 console.log("Current chat data retrieved is: ", doc.data());
                 // if (doc.data().chatMessages[doc.data().chatMessages.length - 1].author == 2) {
                 //     this.playSound()
                 // }
                 message = doc.data().chatMessages
-                this.setState({ chatMessages: doc.data().chatMessages })
+                this.setState({ chatMessages: doc.data().chatMessages, unread: message.length })
                 document.getElementById('container').scrollTop = 9999999;
+                
 
                 //this.playSound()
 
                 console.log("message is", message)
+                console.log("UnreadMessages is", this.state.unread)
                 document.getElementById('container').scrollTop = 9999999;
             }
                 , error => {
@@ -113,22 +126,7 @@ export class Chat extends Component {
             );
     }
 
-    componentDidMount() {
-
-        //this.playSound()
-
-    }
-
-
-    openChat = () => {
-        if (this.state.height == 45) {
-            this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener' })
-        }
-        else {
-            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '' })
-        }
-
-    }
+   
 
     handleChange = (e) => {
 
@@ -169,14 +167,14 @@ export class Chat extends Component {
             }}>
                 <div
                     onClick={this.openChat}
-                    style={{ borderRadius: '5px', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, height: '45px', backgroundColor: this.props.backgroundColor || '#cd0000' }}>
+                    style={{ borderRadius: '5px', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, height: '45px', backgroundColor: this.props.backgroundColor || '#F22F46' }}>
                     <p className="pl-3" style={{ lineHeight: '45px', color: 'white' }}>Live Chat <span className="float-right mr-3"><a onClick={this.openChat} href="#" className="text-white"><i className={this.state.iconClass}></i></a></span></p>
                 </div>
                 <div className="bg-white p-3" style={{ height: '330px', overflow: 'scroll' }} id="container">
                     {message && this.state.chatMessages.map((msg, id) => {
                         return (
                             <div style={{ marginLeft: 5 }} className="clearfix" key={id}>
-                                {msg.author == 1 &&
+                                {msg.author == 'patient' &&
                                     <div>
                                         <div className='row'>
                                             <small style={{ paddingLeft: 10, fontWeight: 'bold', color: 'rgba(204, 0, 0, 0.51)' }}>you</small>
@@ -196,14 +194,14 @@ export class Chat extends Component {
                                         </div>
                                     </div>
                                 }
-                                {msg.author == 2 &&
+                                {msg.author == 'doctor' &&
                                     <div className="w-100 mb-2 clearfix row"  >
                                         <div style={{ height: 50, width: '40%', float: 'left' }}>
 
                                         </div>
                                         <div style={{ width: '60%', float: 'right' }}>
                                             <div className="text-black  text-right float-right"  >
-                                                <small className="text-right" style={{ fontWeight: 'bold', color: 'rgba(204, 0, 0, 0.51)', alignSelf: 'right' }}>{this.props.nameShop || 'seller'}</small>
+                                                <small className="text-right" style={{ fontWeight: 'bold', color: 'rgba(204, 0, 0, 0.51)', alignSelf: 'right' }}>{'Doctor'}</small>
                                             </div>
 
                                             <div className="text-black p-2 text-right float-right row mb-1 mt-1"
