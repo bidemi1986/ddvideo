@@ -5,6 +5,7 @@ import config from '../chats/chatConfig'
 import Logo from '../../assets/tool.png'
 
 import 'firebase/firestore';
+import "firebase/storage";
 
 
 const firebase = require('firebase')
@@ -16,6 +17,7 @@ var db = firebase.firestore()
 let ping = new Audio(sound)
 let message = []
 let chatID = ''
+let unREAD = 0
 
 
 
@@ -30,8 +32,14 @@ export class Chat extends Component {
         chatID: '',
         processing: false,
         chatMessages: [],
-        unread:'',
-        sending: false
+        unread: '',
+        open: false,
+        sending: false,
+        unREAD: '',
+        progress: '',
+        error: '',
+        url:'',
+        progress: ''
     }
 
 
@@ -39,12 +47,27 @@ export class Chat extends Component {
         if (!firebase.apps.length) {
             firebase.initializeApp(config);
         }
-        console.log("chatID recieved is: ",this.props.wcChat)
+        //console.log("chatID recieved is: ", this.props.wcChat)
+
+        if(this.props.wcChat){
+            console.log("chatID recieved is: ", this.props.wcChat)
+            this.retrieveChat()
+        }
     }
 
 
     playSound = () => {
         ping.play()
+    }
+
+    openChat = () => {
+        if (this.state.height == 45) {
+            this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener', open: true })
+        }
+        else {
+            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '', open: false })
+        }
+
     }
 
 
@@ -70,9 +93,9 @@ export class Chat extends Component {
             console.log('R2 found is ', r2)
             if (r2.msg === 'SUCCESS') {
                 console.log('response from chat server is:', r2, 'total response is... ', r2)
-               
-                    chatID = r2.data
-                    this.setState({ chatID: r2.data, processing: false })
+
+                chatID = r2.data
+                this.setState({ chatID: r2.data, processing: false })
 
                 this.retrieveChat()
 
@@ -101,12 +124,18 @@ export class Chat extends Component {
                 message = doc.data().chatMessages
                 this.setState({ chatMessages: doc.data().chatMessages, unread: message.length })
                 document.getElementById('container').scrollTop = 9999999;
-                
+                message.forEach(element => {    
+                     if(this.state.open == false && element.author == 'doctor'  ){
+                        unREAD = ++unREAD
+                        this.setState({unREAD})
+                        
+                }
+                else if( this.state.open == true && element.author == 'doctor' ){
+                    this.setState({unREAD: ''})
+                    
+                }
+               });
 
-                //this.playSound()
-
-                console.log("message is", message)
-                console.log("UnreadMessages is", this.state.unread)
                 document.getElementById('container').scrollTop = 9999999;
             }
                 , error => {
@@ -115,22 +144,52 @@ export class Chat extends Component {
             );
     }
 
-    componentDidMount() {
+    uploadFile(event) {
+        const storage = firebase.storage()
+       
+        let file = event.target.files[0];
 
-        //this.playSound()
+        const imageExtension = file.name.split('.')[file.name.split('.').length - 1]
+        const newName = `${Math.round(Math.random() * 10000000000)}.${imageExtension}`
+        console.log(file);
+        
+        if (file) {
+          let data = new FormData();
+          data.append('file', file);
+          // axios.post('/files', data)...
+          const uploadTask = storage.ref(`images/${newName}`).put(file);
+          uploadTask.on(
+            "state_changed",
+            snapshot => {
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                );
+                console.log(" progress value is ", progress)
+                this.setState({progress});
+            },
+            error => {
+                // error function ....
+                console.log(error);
+                this.setState({error});
+            },
+            () => {
+                // complete function ....
+                storage
+                    .ref(`images/${newName}`)
+                    .child(newName) // Upload the file and metadata
+                    .getDownloadURL() // get download url
+                    .then(url => {
+                        console.log(url);
+                        this.setState({url});
+                        //props.sendingImageURL(url)
+                        //setProgress(0);
+                    });
+            }
+        )
 
+        }
     }
 
-
-    openChat = () => {
-        if (this.state.height == 45) {
-            this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener' })
-        }
-        else {
-            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '' })
-        }
-
-    }
 
     handleChange = (e) => {
 
@@ -138,6 +197,7 @@ export class Chat extends Component {
         document.getElementById('container').scrollTop = 9999999;
     }
 
+    
 
 
     render() {
@@ -172,7 +232,7 @@ export class Chat extends Component {
                 <div
                     onClick={this.openChat}
                     style={{ borderRadius: '5px', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, height: '45px', backgroundColor: this.props.backgroundColor || '#F22F46' }}>
-                    <p className="pl-3" style={{ lineHeight: '45px', color: 'white' }}>Live Chat <span className="float-right mr-3"><a onClick={this.openChat} href="#" className="text-white"><i className={this.state.iconClass}></i></a></span></p>
+                    <p className="pl-3" style={{ lineHeight: '45px', color: 'white' }}>Messages {this.state.unREAD && <span style={{ paddingLeft: 5,paddingRight:5, backgroundColor:'red'}}>{this.state.unREAD}</span> } <span className="float-right mr-3"><a onClick={this.openChat} href="#" className="text-white"><i className={this.state.iconClass}></i></a></span></p>
                 </div>
                 <div className="bg-white p-3" style={{ height: '330px', overflow: 'scroll' }} id="container">
                     {message && this.state.chatMessages.map((msg, id) => {
@@ -239,9 +299,11 @@ export class Chat extends Component {
 
                     />
                     </div>
-                    <div style={{ flex: '10%', padding: 5 }}>
-                        <img src={Logo} width='15' />
-                    </div>
+                    {/* <div style={{ flex: '10%', padding: 5 }}>
+                    <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={this.uploadFile}/>
+<label for="fileElem"><img src={Logo} width='15' /></label>
+                        
+                    </div> */}
                 </div>
 
             </div >
