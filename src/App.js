@@ -62,8 +62,8 @@ function App() {
       </nav>}
 
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: viewMod == 2?20:0 }}>
-        <div style={{ display: "flex", justifyContent: "center", height: viewMod == 2? "90vh":"100vh", width: viewMod == 2?"90%":"100%" }}>
-          <Iframe 
+        <div style={{ display: "flex", justifyContent: "center", height: viewMod == 2 ? "90vh":"100vh", width: viewMod == 2 ? "90%":"100%" }}>
+          {(tt.length > 1 && tr.length > 1) && <Iframe 
             url={videoURL}
             position="relative"
             width="100%"
@@ -72,7 +72,7 @@ function App() {
             height="100%"
             styles={{ height: "100%", alignSelf: "center" }}
             allow="camera"
-          />
+          />}
         </div>
         {viewMod == 2 && <Chat wcChat={wc}/>}
       </div>
