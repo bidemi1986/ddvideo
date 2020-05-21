@@ -20,7 +20,7 @@ let chatID = ''
 let unREAD = 0
 
 
-
+//localStorage.setItem()
 
 export class Chat extends Component {
     state = {
@@ -62,7 +62,7 @@ export class Chat extends Component {
 
     openChat = () => {
         if (this.state.height == 45) {
-            this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener', open: true })
+            this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener', open: true, unREAD: '' })
         }
         else {
             this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '', open: false })
@@ -130,7 +130,7 @@ export class Chat extends Component {
                         this.setState({unREAD})
                         
                 }
-                else if( this.state.open == true && element.author == 'doctor' ){
+                else if( this.state.open == true){
                     this.setState({unREAD: ''})
                     
                 }
@@ -232,7 +232,7 @@ export class Chat extends Component {
                 <div
                     onClick={this.openChat}
                     style={{ borderRadius: '5px', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, height: '45px', backgroundColor: this.props.backgroundColor || '#F22F46' }}>
-                    <p className="pl-3" style={{ lineHeight: '45px', color: 'white' }}>Messages {this.state.unREAD && <span style={{ paddingLeft: 5,paddingRight:5, backgroundColor:'red'}}>{this.state.unREAD}</span> } <span className="float-right mr-3"><a onClick={this.openChat} href="#" className="text-white"><i className={this.state.iconClass}></i></a></span></p>
+                    <p className="pl-3" style={{ lineHeight: '45px', color: 'white' }}>Messages {this.state.unREAD &&  this.state.height == 45 && <span style={{ paddingLeft: 5,paddingRight:5, backgroundColor:'red'}}>{this.state.unREAD}</span> } <span className="float-right mr-3"><a onClick={this.openChat} href="#" className="text-white"><i className={this.state.iconClass}></i></a></span></p>
                 </div>
                 <div className="bg-white p-3" style={{ height: '330px', overflow: 'scroll' }} id="container">
                     {message && this.state.chatMessages.map((msg, id) => {
