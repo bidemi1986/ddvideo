@@ -112,9 +112,39 @@ export class Chat extends Component {
     }
 
 
-
-
     retrieveChat = async () => {
+        db.collection("Chats").doc(this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p')
+            .onSnapshot(doc => {
+                console.log("Current chat data retrieved is: ", doc.data());
+                // if (doc.data().chatMessages[doc.data().chatMessages.length - 1].author == 2) {
+                //     this.playSound()
+                // }
+                message = doc.data().chatMessages
+                this.setState({ chatMessages: doc.data().chatMessages, unread: message.length })
+                document.getElementById('container').scrollTop = 9999999;
+                message.forEach(element => {  
+                    const nOfTotal = (message.length || 0) + 1  
+                     if(this.state.open == false ){
+                        unREAD = nOfTotal
+                        this.setState({unREAD})
+                        
+                }
+                else if( this.state.open == true){
+                    this.setState({unREAD: ''})
+                    
+                }
+               });
+
+                document.getElementById('container').scrollTop = 9999999;
+            }
+                , error => {
+                    console.log("error is ", error)
+                }
+            );
+    }
+    
+
+    /* retrieveChat = async () => {
         db.collection("Chats").doc(this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p')
             .get().then(doc => {
                 console.log("Current chat data retrieved is: ", doc.data());
@@ -142,7 +172,7 @@ export class Chat extends Component {
                     console.log("error is ", error)
                 }
             );
-    }
+    } */
 
     uploadFile(event) {
         const storage = firebase.storage()

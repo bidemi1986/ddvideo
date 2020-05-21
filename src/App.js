@@ -62,14 +62,14 @@ function App() {
       </nav>}
 
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 0 }}>
-        <div style={{ display: "flex", justifyContent: "center", height: "100vh", width: "100%" }}>
+        <div style={{ display: "flex", justifyContent: "center", height: window.innerHeight, width: "100%" }}>
           {(tt.length > 1 && tr.length > 1) && <Iframe 
             url={videoURL}
             position="relative"
             width="100%"
             id="myId"
             className="myClassname"
-            height="100%"
+            height="90%"
             styles={{ height: "100%", alignSelf: "center" }}
             allow="camera"
           />}
