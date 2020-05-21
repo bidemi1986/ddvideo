@@ -58,11 +58,11 @@ function App() {
   return (
     <div className="App">
       {viewMod == 2 && <nav class="navbar nav shadow-sm">
-        <span class="navbar-brand mb-0 h1">Tele-Video</span>
+        <span class="navbar-brand mb-0 h1">DoctorDial Tele-Video</span>
       </nav>}
 
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: viewMod == 2?20:0 }}>
-        <div style={{ display: "flex", justifyContent: "center", height: viewMod == 2 ? "90vh":"100vh", width: viewMod == 2 ? "90%":"100%" }}>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 0 }}>
+        <div style={{ display: "flex", justifyContent: "center", height: "100vh", width: "100%" }}>
           {(tt.length > 1 && tr.length > 1) && <Iframe 
             url={videoURL}
             position="relative"
