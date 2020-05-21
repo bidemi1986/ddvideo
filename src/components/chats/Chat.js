@@ -124,9 +124,10 @@ export class Chat extends Component {
                 message = doc.data().chatMessages
                 this.setState({ chatMessages: doc.data().chatMessages, unread: message.length })
                 document.getElementById('container').scrollTop = 9999999;
-                message.forEach(element => {    
-                     if(this.state.open == false && element.author == 'doctor'  ){
-                        unREAD = ++unREAD
+                message.forEach(element => {  
+                    const nOfTotal = (message.length || 0) + 1  
+                     if(this.state.open == false ){
+                        unREAD = nOfTotal
                         this.setState({unREAD})
                         
                 }
@@ -207,7 +208,7 @@ export class Chat extends Component {
             if (e.keyCode == 13) {
 
                 message.push({
-                    author: 1,
+                    author: 'patient',
                     text: this.state.inputChat,
                     timeSent: '',
                     sending: true
