@@ -71,7 +71,8 @@ function App() {
             className="myClassname"
             height="90%"
             styles={{ height: "100%", alignSelf: "center" }}
-            allow="camera"
+            allow="camera;microphone"
+            //allow="audio"
           />}
         </div>
         {viewMod == 2 && <Chat wcChat={wc}/>}
