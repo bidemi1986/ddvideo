@@ -32,14 +32,14 @@ export class Chat extends Component {
         chatID: '',
         processing: false,
         chatMessages: [],
-        unread: '',
+        unRead: 0,
+        read:0,
         open: false,
         sending: false,
-        unREAD: '',
         progress: '',
         error: '',
-        url:'',
-        progress: ''
+        url: '',
+        
     }
 
 
@@ -49,7 +49,7 @@ export class Chat extends Component {
         }
         //console.log("chatID recieved is: ", this.props.wcChat)
 
-        if(this.props.wcChat){
+        if (this.props.wcChat) {
             console.log("chatID recieved is: ", this.props.wcChat)
             this.retrieveChat()
         }
@@ -122,18 +122,17 @@ export class Chat extends Component {
                 message = doc.data().chatMessages
                 this.setState({ chatMessages: doc.data().chatMessages, unread: message.length })
                 document.getElementById('container').scrollTop = 9999999;
-                message.forEach(element => {  
-                    const nOfTotal = (message.length || 0) + 1  
-                     if(this.state.open == false ){
-                        unREAD = nOfTotal
-                        this.setState({unREAD})
-                        
-                }
-                else if( this.state.open == true){
-                    this.setState({unREAD: ''})
-                    
-                }
-               });
+              
+                    if (this.state.open == false) {
+                        let nOfTotal = message.length - this.state.read 
+                        this.setState({ unRead: nOfTotal })
+                        console.log('UNREAD IS ', this.state.unRead)
+                    }
+                    else  {
+                        this.setState({ read: message.length})
+                        console.log('UNREADOPEN IS ', this.state.read)
+                    }
+             
 
                 document.getElementById('container').scrollTop = 9999999;
             }
@@ -142,7 +141,7 @@ export class Chat extends Component {
                 }
             );
     }
-    
+
 
     /* retrieveChat = async () => {
         db.collection("Chats").doc(this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p')
@@ -176,46 +175,46 @@ export class Chat extends Component {
 
     uploadFile(event) {
         const storage = firebase.storage()
-       
+
         let file = event.target.files[0];
 
         const imageExtension = file.name.split('.')[file.name.split('.').length - 1]
         const newName = `${Math.round(Math.random() * 10000000000)}.${imageExtension}`
         console.log(file);
-        
+
         if (file) {
-          let data = new FormData();
-          data.append('file', file);
-          // axios.post('/files', data)...
-          const uploadTask = storage.ref(`images/${newName}`).put(file);
-          uploadTask.on(
-            "state_changed",
-            snapshot => {
-                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-                const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100
-                );
-                console.log(" progress value is ", progress)
-                this.setState({progress});
-            },
-            error => {
-                // error function ....
-                console.log(error);
-                this.setState({error});
-            },
-            () => {
-                // complete function ....
-                storage
-                    .ref(`images/${newName}`)
-                    .child(newName) // Upload the file and metadata
-                    .getDownloadURL() // get download url
-                    .then(url => {
-                        console.log(url);
-                        this.setState({url});
-                        //props.sendingImageURL(url)
-                        //setProgress(0);
-                    });
-            }
-        )
+            let data = new FormData();
+            data.append('file', file);
+            // axios.post('/files', data)...
+            const uploadTask = storage.ref(`images/${newName}`).put(file);
+            uploadTask.on(
+                "state_changed",
+                snapshot => {
+                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                    );
+                    console.log(" progress value is ", progress)
+                    this.setState({ progress });
+                },
+                error => {
+                    // error function ....
+                    console.log(error);
+                    this.setState({ error });
+                },
+                () => {
+                    // complete function ....
+                    storage
+                        .ref(`images/${newName}`)
+                        .child(newName) // Upload the file and metadata
+                        .getDownloadURL() // get download url
+                        .then(url => {
+                            console.log(url);
+                            this.setState({ url });
+                            //props.sendingImageURL(url)
+                            //setProgress(0);
+                        });
+                }
+            )
 
         }
     }
@@ -227,7 +226,7 @@ export class Chat extends Component {
         document.getElementById('container').scrollTop = 9999999;
     }
 
-    
+
 
 
     render() {
@@ -262,7 +261,7 @@ export class Chat extends Component {
                 <div
                     onClick={this.openChat}
                     style={{ borderRadius: '5px', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, height: '45px', backgroundColor: this.props.backgroundColor || '#F22F46' }}>
-                    <p className="pl-3" style={{ lineHeight: '45px', color: 'white' }}>Messages {this.state.unREAD &&  this.state.height == 45 && <span style={{ paddingLeft: 5,paddingRight:5, backgroundColor:'red'}}>{this.state.unREAD}</span> } <span className="float-right mr-3"><a onClick={this.openChat} href="#" className="text-white"><i className={this.state.iconClass}></i></a></span></p>
+                    <p className="pl-3" style={{ lineHeight: '45px', color: 'white' }}>Messages {this.state.unRead && this.state.height == 45 && <span style={{ paddingLeft: 5, paddingRight: 5, backgroundColor: 'red' }}>{this.state.unRead}</span>} <span className="float-right mr-3"><a onClick={this.openChat} href="#" className="text-white"><i className={this.state.iconClass}></i></a></span></p>
                 </div>
                 <div className="bg-white p-3" style={{ height: '330px', overflow: 'scroll' }} id="container">
                     {message && this.state.chatMessages.map((msg, id) => {
@@ -270,19 +269,19 @@ export class Chat extends Component {
                             <div style={{ marginLeft: 5 }} className="clearfix" key={id}>
                                 {msg.author == 'patient' &&
                                     <div>
-                                        <div className='row'>
+                                        {/* <div className='row'>
                                             <small style={{ paddingLeft: 10, fontWeight: 'bold', color: 'rgba(204, 0, 0, 0.51)' }}>you</small>
                                             <div className="row px-3">{msg.sending && <i className="fa fa-spinner fa-spin"
                                                 style={{ lineHeight: 1.5, marginLeft: 5 }}></i>}
                                             </div>
-                                        </div>
+                                        </div> */}
 
-                                        <div className="text-black p-2 text-center row"
+                                        <div className="text-black p-2 text-center row mt-1"
                                             style={{
                                                 backgroundColor: '#f5f5f5', overflowWrap: 'inherit', borderRadius: '5px',
                                                 width: '100%', maxWidth: '60%', overflowX: 'hidden', wordWrap: 'break-word',
                                                 lineHeight: 1.2,
-                                                paddingBottom: 5
+                                                paddingBottom: 5, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, borderTopRightRadius: 20
                                             }}>
                                             <small className='text-black ml-4' style={{ textAlign: 'left' }}>{msg.text} </small>
                                         </div>
@@ -294,12 +293,12 @@ export class Chat extends Component {
 
                                         </div>
                                         <div style={{ width: '60%', float: 'right' }}>
-                                            <div className="text-black  text-right float-right"  >
+                                            {/* <div className="text-black  text-right float-right"  >
                                                 <small className="text-right" style={{ fontWeight: 'bold', color: 'rgba(204, 0, 0, 0.51)', alignSelf: 'right' }}>{'Doctor'}</small>
-                                            </div>
+                                            </div> */}
 
-                                            <div className="text-black p-2 text-right float-right row mb-1 mt-1"
-                                                style={{ backgroundColor: '#f5f5f5', borderRadius: '5px', width: '100%' }}>
+                                            <div className="text-black p-2 text-right float-right row mt-1"
+                                                style={{ backgroundColor: '#ffdcdc', width: '100%', lineHeight: 1.2, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, borderTopLeftRadius: 20 }}>
                                                 <div className="float-right">
                                                     <small className='text-black mr-4 text-right'>{msg.text} </small>
 
