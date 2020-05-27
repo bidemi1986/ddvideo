@@ -65,7 +65,7 @@ export class Chat extends Component {
             this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener', open: true, unREAD: '' })
         }
         else {
-            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '', open: false })
+            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '', open: false ,read: message.length, unRead: ''})
         }
 
     }
