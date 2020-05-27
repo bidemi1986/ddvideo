@@ -120,7 +120,7 @@ export class Chat extends Component {
                 //     this.playSound()
                 // }
                 message = doc.data().chatMessages
-                this.setState({ chatMessages: doc.data().chatMessages, unread: message.length })
+                this.setState({ chatMessages: doc.data().chatMessages || [], unread: message.length })
                 document.getElementById('container').scrollTop = 9999999;
               
                     if (this.state.open == false) {
