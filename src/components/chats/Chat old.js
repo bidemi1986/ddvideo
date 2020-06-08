@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import "./chat.css";
 import sound from '../../assets/beyond-doubt.mp3'
-import config from '../chats/chatConfig'
+import config from './chatConfig'
 import Logo from '../../assets/tool.png'
 
 import 'firebase/firestore';
@@ -18,7 +18,6 @@ let ping = new Audio(sound)
 let message = []
 let chatID = ''
 let unREAD = 0
-let file = ''
 
 
 //localStorage.setItem()
@@ -40,7 +39,6 @@ export class Chat extends Component {
         progress: 0,
         error: '',
         url: '',
-        selectedFile: ''
 
     }
 
@@ -55,7 +53,6 @@ export class Chat extends Component {
             console.log("chatID recieved is: ", this.props.wcChat)
             this.retrieveChat()
         }
- 
     }
 
 
@@ -89,8 +86,7 @@ export class Chat extends Component {
                 body: JSON.stringify({
                     //shopName: `${this.props.shopNamefromURL}`,
                     message: msg,
-                    chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p',
-                    image: this.state.selectedFile
+                    chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p'
                 })
             })
             const r2 = await r.json()
@@ -181,11 +177,10 @@ export class Chat extends Component {
             );
     } */
 
-  
     uploadFile(event) {
         const storage = firebase.storage()
 
-        file = event.target.files[0];
+        let file = event.target.files[0];
 
         const imageExtension = file.name.split('.')[file.name.split('.').length - 1]
         const newName = `${Math.round(Math.random() * 10000000000)}.${imageExtension}`
@@ -203,7 +198,7 @@ export class Chat extends Component {
                     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100
                     );
                     console.log(" progress value is ", progress)
-                    this.setState({ progress });
+                    //this.setState({ progress });
                 },
                 error => {
                     // error function ....
@@ -216,10 +211,9 @@ export class Chat extends Component {
                         .ref(`images/`)
                         .child(newName) // Upload the file and metadata
                         .getDownloadURL() // get download url
-                        .then(async url => {
-                            //console.log(url);
-                            await this.setState({ url });
-                            console.log("url in state is: ",this.state.url);
+                        .then(url => {
+                            console.log(url);
+                            //this.setState({ url });
                             //props.sendingImageURL(url)
                             //setProgress(0);
                         });
@@ -241,13 +235,6 @@ export class Chat extends Component {
 
     render() {
 
-       /*  const uploadFileToJane = (event) => {
-            
-            file = event.target.files[0];
-            this.setState({ selectedFile: file }) 
-
-        } */
-
         const keyPress = (e) => {
             document.getElementById('container').scrollTop = 9999999;
             if (e.keyCode == 13) {
@@ -268,15 +255,9 @@ export class Chat extends Component {
                 //console.log(`chatte is ${chat}`)
                 //this.sendChatData(message)
 
-               
-                this.setState({ selectedFile: file })
-                console.log('File found is ', file);
-                console.log('File founded is ', this.state.selectedFile);
-
-               
             }
         }
-        return ( 
+        return (
             <div className="bg-white shadow chat" style={{
                 borderRadius: '5px', position: 'fixed', right: 40, bottom: -1, zIndex: 99, height: this.state.height, WebkitTransition: 'height 0.5s',
                 transition: 'height 0.5s'
@@ -352,10 +333,9 @@ export class Chat extends Component {
                     />
                     </div>
                     <div style={{ flex: '10%', padding: 5 }}>
-                        {/* <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={this.uploadFile} />
-                        <label for="fileElem"><img src={Logo} width='15' /></label> */}
-                        <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={(e) => this.uploadFile(e)} />
+                        <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={this.uploadFile} />
                         <label for="fileElem"><img src={Logo} width='15' /></label>
+
                     </div>
                 </div>
 
