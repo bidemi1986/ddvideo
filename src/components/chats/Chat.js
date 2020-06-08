@@ -18,6 +18,7 @@ let ping = new Audio(sound)
 let message = []
 let chatID = ''
 let unREAD = 0
+let file = ''
 
 
 //localStorage.setItem()
@@ -33,13 +34,14 @@ export class Chat extends Component {
         processing: false,
         chatMessages: [],
         unRead: 0,
-        read:0,
+        read: 0,
         open: false,
         sending: false,
-        progress: '',
+        progress: 0,
         error: '',
         url: '',
-        
+        selectedFile: ''
+
     }
 
 
@@ -53,6 +55,7 @@ export class Chat extends Component {
             console.log("chatID recieved is: ", this.props.wcChat)
             this.retrieveChat()
         }
+ 
     }
 
 
@@ -65,7 +68,7 @@ export class Chat extends Component {
             this.setState({ height: 450, iconClass: 'fas fa-angle-down', class: 'chat-opener', open: true, unREAD: '' })
         }
         else {
-            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '', open: false ,read: message.length, unRead: ''})
+            this.setState({ height: 45, iconClass: 'fas fa-angle-up', class: '', open: false, read: message.length, unRead: '' })
         }
 
     }
@@ -86,7 +89,8 @@ export class Chat extends Component {
                 body: JSON.stringify({
                     //shopName: `${this.props.shopNamefromURL}`,
                     message: msg,
-                    chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p'
+                    chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p',
+                    image: this.state.selectedFile
                 })
             })
             const r2 = await r.json()
@@ -114,25 +118,29 @@ export class Chat extends Component {
 
     retrieveChat = async () => {
         db.collection("Chats").doc(this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p')
-            .onSnapshot(doc => {
+            .onSnapshot(async doc => {
                 console.log("Current chat data retrieved is: ", doc.data());
                 // if (doc.data().chatMessages[doc.data().chatMessages.length - 1].author == 2) {
                 //     this.playSound()
                 // }
-                message = doc.data().chatMessages
-                this.setState({ chatMessages: doc.data().chatMessages, unread: message.length })
+                if(doc.exists){
+
+                message = await doc.data().chatMessages
+                this.setState({ chatMessages: message || [], unread: message.length })
                 document.getElementById('container').scrollTop = 9999999;
-              
-                    if (this.state.open == false) {
-                        let nOfTotal = message.length - this.state.read 
-                        this.setState({ unRead: nOfTotal })
-                        console.log('UNREAD IS ', this.state.unRead)
-                    }
-                    else  {
-                        this.setState({ read: message.length})
-                        console.log('UNREADOPEN IS ', this.state.read)
-                    }
-             
+
+                }
+
+                if (this.state.open == false) {
+                    let nOfTotal = message.length - this.state.read
+                    this.setState({ unRead: nOfTotal })
+                    console.log('UNREAD IS ', this.state.unRead)
+                }
+                else {
+                    this.setState({ read: message.length })
+                    console.log('UNREADOPEN IS ', this.state.read)
+                }
+
 
                 document.getElementById('container').scrollTop = 9999999;
             }
@@ -173,10 +181,11 @@ export class Chat extends Component {
             );
     } */
 
+  
     uploadFile(event) {
         const storage = firebase.storage()
 
-        let file = event.target.files[0];
+        file = event.target.files[0];
 
         const imageExtension = file.name.split('.')[file.name.split('.').length - 1]
         const newName = `${Math.round(Math.random() * 10000000000)}.${imageExtension}`
@@ -194,7 +203,7 @@ export class Chat extends Component {
                     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100
                     );
                     console.log(" progress value is ", progress)
-                    this.setState({ progress });
+                    //this.setState({ progress });
                 },
                 error => {
                     // error function ....
@@ -204,12 +213,12 @@ export class Chat extends Component {
                 () => {
                     // complete function ....
                     storage
-                        .ref(`images/${newName}`)
+                        .ref(`images/`)
                         .child(newName) // Upload the file and metadata
                         .getDownloadURL() // get download url
                         .then(url => {
                             console.log(url);
-                            this.setState({ url });
+                            //this.setState({ url });
                             //props.sendingImageURL(url)
                             //setProgress(0);
                         });
@@ -231,6 +240,17 @@ export class Chat extends Component {
 
     render() {
 
+        const uploadFileToJane = (event) => {
+            
+            file = event.target.files[0];
+            this.setState({ selectedFile: file })
+            // let file2 = this.state.selectedFile
+            // console.log('File found is ', file);
+            // console.log('File found is ', file2);
+            // console.log('File found is ', this.state.selectedFile);
+
+        }
+
         const keyPress = (e) => {
             document.getElementById('container').scrollTop = 9999999;
             if (e.keyCode == 13) {
@@ -251,6 +271,12 @@ export class Chat extends Component {
                 //console.log(`chatte is ${chat}`)
                 //this.sendChatData(message)
 
+               
+                this.setState({ selectedFile: file })
+                console.log('File found is ', file);
+                console.log('File founded is ', this.state.selectedFile);
+
+               
             }
         }
         return (
@@ -328,11 +354,12 @@ export class Chat extends Component {
 
                     />
                     </div>
-                    {/* <div style={{ flex: '10%', padding: 5 }}>
-                    <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={this.uploadFile}/>
-<label for="fileElem"><img src={Logo} width='15' /></label>
-                        
-                    </div> */}
+                    <div style={{ flex: '10%', padding: 5 }}>
+                        {/* <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={this.uploadFile} />
+                        <label for="fileElem"><img src={Logo} width='15' /></label> */}
+                        <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={(e) => uploadFileToJane(e)} />
+                        <label for="fileElem"><img src={Logo} width='15' /></label>
+                    </div>
                 </div>
 
             </div >
