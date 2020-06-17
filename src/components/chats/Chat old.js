@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import "./chat.css";
 import sound from '../../assets/beyond-doubt.mp3'
-import config from '../chats/chatConfig'
+import config from './chatConfig'
 import Logo from '../../assets/tool.png'
 
 import 'firebase/firestore';
@@ -16,10 +16,8 @@ var db = firebase.firestore()
 
 let ping = new Audio(sound)
 let message = []
-let pictureUrl = ''
 let chatID = ''
 let unREAD = 0
-let file = ''
 
 
 //localStorage.setItem()
@@ -41,7 +39,6 @@ export class Chat extends Component {
         progress: 0,
         error: '',
         url: '',
-        selectedFile: ''
 
     }
 
@@ -56,7 +53,6 @@ export class Chat extends Component {
             console.log("chatID recieved is: ", this.props.wcChat)
             this.retrieveChat()
         }
-
     }
 
 
@@ -75,75 +71,31 @@ export class Chat extends Component {
     }
 
 
-    // sendChatData = async (msg) => {
-    //     document.getElementById('container').scrollTop = 9999999;
-    //     try {
-    //         if (!chatID) {
-    //             this.setState({ processing: true })
-    //         }
-    //         const r = await fetch("https://us-central1-afdoctordial.cloudfunctions.net/newChat", {
-    //             method: "POST",
-    //             //mode: "no-cors",
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({
-    //                 //shopName: `${this.props.shopNamefromURL}`,
-    //                 message: msg,
-    //                 chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p',
-    //                 image: this.state.url
-    //             })
-    //         })
-    //         const r2 = await r.json()
-    //         console.log('R2 found is ', r2)
-    //         if (r2.msg === 'SUCCESS') {
-    //             console.log('response from chat server is:', r2, 'total response is... ', r2)
-
-    //             chatID = r2.data
-    //             this.setState({ chatID: r2.data, processing: false })
-
-    //             this.retrieveChat()
-
-    //         } else {
-    //             console.log(r2.error)
-    //             this.setState({ processing: false })
-    //         }
-
-    //     } catch (err) {
-    //         console.log("Error from firebase is: ", err);
-    //         this.setState({ processing: false })
-    //     }
-
-    // }
-
-    sendChatData = async () => {
+    sendChatData = async (msg) => {
         document.getElementById('container').scrollTop = 9999999;
         try {
             if (!chatID) {
                 this.setState({ processing: true })
             }
-            if (!this.state.selectedFile && !this.state.inputChat) {
-                return
-            }
             const r = await fetch("https://us-central1-afdoctordial.cloudfunctions.net/newChat", {
                 method: "POST",
+                //mode: "no-cors",
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     //shopName: `${this.props.shopNamefromURL}`,
-                    message: this.state.inputChat || '',
-                    chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p',
-                    image: this.state.selectedFile || null,
-                    file: this.state.file || ""
+                    message: msg,
+                    chatID: this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p'
                 })
             })
             const r2 = await r.json()
             console.log('R2 found is ', r2)
             if (r2.msg === 'SUCCESS') {
                 console.log('response from chat server is:', r2, 'total response is... ', r2)
+
                 chatID = r2.data
-                this.setState({ chatID: r2.data, processing: false, message: '', file: '', selectedFile: '' })
+                this.setState({ chatID: r2.data, processing: false })
 
                 this.retrieveChat()
 
@@ -159,6 +111,7 @@ export class Chat extends Component {
 
     }
 
+
     retrieveChat = async () => {
         db.collection("Chats").doc(this.props.wcChat || '3KcZlwakWEHwaBItHpatHphByb3p8tK8gjrBpy9p')
             .onSnapshot(async doc => {
@@ -166,11 +119,11 @@ export class Chat extends Component {
                 // if (doc.data().chatMessages[doc.data().chatMessages.length - 1].author == 2) {
                 //     this.playSound()
                 // }
-                if (doc.exists) {
+                if(doc.exists){
 
-                    message = await doc.data().chatMessages
-                    this.setState({ chatMessages: message || [], unread: message.length })
-                    document.getElementById('container').scrollTop = 9999999;
+                message = await doc.data().chatMessages
+                this.setState({ chatMessages: message || [], unread: message.length })
+                document.getElementById('container').scrollTop = 9999999;
 
                 }
 
@@ -224,54 +177,51 @@ export class Chat extends Component {
             );
     } */
 
+    uploadFile(event) {
+        const storage = firebase.storage()
 
-    // uploadFile(event) {
-    //     const storage = firebase.storage()
+        let file = event.target.files[0];
 
-    //     file = event.target.files[0];
+        const imageExtension = file.name.split('.')[file.name.split('.').length - 1]
+        const newName = `${Math.round(Math.random() * 10000000000)}.${imageExtension}`
+        console.log(file);
 
-    //     const imageExtension = file.name.split('.')[file.name.split('.').length - 1]
-    //     const newName = `${Math.round(Math.random() * 10000000000)}.${imageExtension}`
-    //     console.log(file);
+        if (file) {
+            let data = new FormData();
+            data.append('file', file);
+            // axios.post('/files', data)...
+            const uploadTask = storage.ref(`images/${newName}`).put(file);
+            uploadTask.on(
+                "state_changed",
+                snapshot => {
+                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                    );
+                    console.log(" progress value is ", progress)
+                    //this.setState({ progress });
+                },
+                error => {
+                    // error function ....
+                    console.log(error);
+                    this.setState({ error });
+                },
+                () => {
+                    // complete function ....
+                    storage
+                        .ref(`images/`)
+                        .child(newName) // Upload the file and metadata
+                        .getDownloadURL() // get download url
+                        .then(url => {
+                            console.log(url);
+                            //this.setState({ url });
+                            //props.sendingImageURL(url)
+                            //setProgress(0);
+                        });
+                }
+            )
 
-    //     if (file) {
-    //         let data = new FormData();
-    //         data.append('file', file);
-    //         // axios.post('/files', data)...
-    //         const uploadTask = storage.ref(`images/${newName}`).put(file);
-    //         uploadTask.on(
-    //             "state_changed",
-    //             snapshot => {
-    //                 // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-    //                 const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100
-    //                 );
-    //                 console.log(" progress value is ", progress)
-    //                 //this.setState({ progress });
-    //             },
-    //             error => {
-    //                 // error function ....
-    //                 console.log(error);
-    //                 this.setState({ error });
-    //             },
-    //             () => {
-    //                 // complete function ....
-    //                 storage
-    //                     .ref(`images/`)
-    //                     .child(newName) // Upload the file and metadata
-    //                     .getDownloadURL() // get download url
-    //                     .then(async url => {
-    //                         //console.log(url);
-    //                         await this.setState({ url });
-    //                         this.sendChatData()
-    //                         console.log("url in state is: ",this.state.url);
-    //                         //props.sendingImageURL(url)
-    //                         //setProgress(0);
-    //                     });
-    //             }
-    //         )
-
-    //     }
-    // }
+        }
+    }
 
 
     handleChange = (e) => {
@@ -284,29 +234,6 @@ export class Chat extends Component {
 
 
     render() {
-
-
-        const uploadFile = async (e) => {
-            let file = e.target.files[0];
-            //read data from the blob objects(file)
-            let reader = new FileReader();
-            //reads the binary data and encodes it as base64 data url
-            if (file) {
-                reader.readAsDataURL(file);
-            }
-            //reads it finished with either success or failure
-            reader.onloadend = () => {
-                //reader.result is the result of the reading
-                this.setState({
-                    file: file.name,
-                    selectedFile: reader.result
-                });
-                // console.log('imagesss', this.state.selectedFile);
-                this.sendChatData()
-
-            };
-            console.log('====>', file);
-        }
 
         const keyPress = (e) => {
             document.getElementById('container').scrollTop = 9999999;
@@ -321,50 +248,15 @@ export class Chat extends Component {
                 this.setState({
                     chatMessages: message
                 })
-                this.sendChatData()
+                this.sendChatData(this.state.inputChat)
                 this.setState({
                     inputChat: ''
                 })
-
+                //console.log(`chatte is ${chat}`)
+                //this.sendChatData(message)
 
             }
         }
-
-        /*  const uploadFileToJane = (event) => {
-             
-             file = event.target.files[0];
-             this.setState({ selectedFile: file }) 
- 
-         } */
-
-        // const keyPress = (e) => {
-        //     document.getElementById('container').scrollTop = 9999999;
-        //     if (e.keyCode == 13) {
-
-        //         message.push({
-        //             author: 1,
-        //             text: this.state.inputChat,
-        //             timeSent: '',
-        //             sending: true
-        //         })
-        //         this.setState({
-        //             chatMessages: message
-        //         })
-        //         this.sendChatData(this.state.inputChat)
-        //         this.setState({
-        //             inputChat: ''
-        //         })
-        //         //console.log(`chatte is ${chat}`)
-        //         //this.sendChatData(message)
-
-
-        //         this.setState({ selectedFile: file })
-        //         console.log('File found is ', file);
-        //         console.log('File founded is ', this.state.selectedFile);
-
-
-        //     }
-        // }
         return (
             <div className="bg-white shadow chat" style={{
                 borderRadius: '5px', position: 'fixed', right: 40, bottom: -1, zIndex: 99, height: this.state.height, WebkitTransition: 'height 0.5s',
@@ -381,12 +273,14 @@ export class Chat extends Component {
                             <div style={{ marginLeft: 5 }} className="clearfix" key={id}>
                                 {msg.author == 'patient' &&
                                     <div>
-                                        <div className='row'>
-                                            <div className="row px-3">{msg.sending == true && <i className="fa fa-spinner fa-spin"
-                                                style={{ lineHeight: 1.5, marginLeft: 5, color: '#000000' }}></i>}
+                                        {/* <div className='row'>
+                                            <small style={{ paddingLeft: 10, fontWeight: 'bold', color: 'rgba(204, 0, 0, 0.51)' }}>you</small>
+                                            <div className="row px-3">{msg.sending && <i className="fa fa-spinner fa-spin"
+                                                style={{ lineHeight: 1.5, marginLeft: 5 }}></i>}
                                             </div>
-                                        </div>
-                                        {msg.text && <div className="text-black p-2 text-center row mt-1"
+                                        </div> */}
+
+                                        <div className="text-black p-2 text-center row mt-1"
                                             style={{
                                                 backgroundColor: '#f5f5f5', overflowWrap: 'inherit', borderRadius: '5px',
                                                 width: '100%', maxWidth: '60%', overflowX: 'hidden', wordWrap: 'break-word',
@@ -394,18 +288,7 @@ export class Chat extends Component {
                                                 paddingBottom: 5, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, borderTopRightRadius: 20
                                             }}>
                                             <small className='text-black ml-4' style={{ textAlign: 'left' }}>{msg.text} </small>
-
-                                        </div>}
-
-                                        {msg.pictureURL && <div className="text-black p-2 text-center row mt-1"
-                                            style={{
-                                                backgroundColor: '#f5f5f5', overflowWrap: 'inherit', borderRadius: '5px',
-                                                width: '100%', maxWidth: '60%', overflowX: 'hidden', wordWrap: 'break-word',
-                                                lineHeight: 1.2,
-                                                paddingBottom: 5
-                                            }}>
-                                            <img src={msg.pictureURL} width='50' height='50' alt="" />
-                                        </div>}
+                                        </div>
                                     </div>
                                 }
                                 {msg.author == 'doctor' &&
@@ -422,6 +305,7 @@ export class Chat extends Component {
                                                 style={{ backgroundColor: '#ffdcdc', width: '100%', lineHeight: 1.2, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, borderTopLeftRadius: 20 }}>
                                                 <div className="float-right">
                                                     <small className='text-black mr-4 text-right'>{msg.text} </small>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -444,15 +328,14 @@ export class Chat extends Component {
                     <div style={{ flex: '90%' }}> <input type="text" name="inputChat" value={this.state.inputChat}
                         onChange={this.handleChange}
                         onKeyDown={keyPress} id="inputText" class="form-control" placeholder="Type your message and press Enter to send" required autofocus
-
+                        disabled={this.state.processing}
 
                     />
                     </div>
                     <div style={{ flex: '10%', padding: 5 }}>
-                        {/* <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={this.uploadFile} />
-                        <label for="fileElem"><img src={Logo} width='15' /></label> */}
-                        <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={(e) => uploadFile(e)} />
+                        <input type="file" id="fileElem" multiple accept="image/*" class="visually-hidden" onChange={this.uploadFile} />
                         <label for="fileElem"><img src={Logo} width='15' /></label>
+
                     </div>
                 </div>
 
